@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Frontend</title>
+</head>
+<body>
+  <h1>Simple Frontend</h1>
+  <div>
+    <h2>Customers</h2>
+    <ul id="customersList"></ul>
+  </div>
+  <div>
+    <h2>Create Customer</h2>
+    <input type="text" id="nameInput" placeholder="Name">
+    <input type="text" id="emailInput" placeholder="Email">
+    <button onclick="createCustomer()">Create</button>
+  </div>
+
+  <script>
+    async function fetchCustomers() {
+      const response = await fetch('http://localhost:4000/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: '{ customers { id, name, email } }' }),
+      });
+      const data = await response.json();
+      const customers = data.data.customers;
+      const customersList = document.getElementById('customersList');
+      customers.forEach(customer => {
+        const li = document.createElement('li');
+        li.textContent = `${customer.name} - ${customer.email}`;
+        customersList.appendChild(li);
+      });
+    }
+
+    async function createCustomer() {
+      const name = document.getElementById('nameInput').value;
+      const email = document.getElementById('emailInput').value;
+      await fetch('http://localhost:4000/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: `mutation { createCustomer(name: "${name}", email: "${email}") { id, name, email } }` }),
+      });
+      fetchCustomers();
+    }
+
+    fetchCustomers();
+  </script>
+</body>
+</html>
